@@ -1,0 +1,73 @@
+{
+  "hintBar": true,
+  "wallpaperDir": "~/Imagens",
+  "desktopWallpaper": true,
+  "font": "Archivo",
+  "fontWidth": 125,
+  "hintFont": "M PLUS 1p",
+  "options": [
+    "background",
+    "wifi",
+    "bluetooth"
+  ],
+  "apps": [
+    {
+      "title": "News Capture",
+      "icon": "news2.png",
+      "iconBox": "news.png",
+      "command": [
+        "xdg-open",
+        "https://www.youtube.com/watch?v=UcjZq9RWAH8"
+      ]
+    },
+    {
+      "title": "Community Forum",
+      "icon": "news2.png",
+      "iconBox": "news.png",
+      "command": [
+        "xdg-open",
+        "https://www.reddit.com/r/DotHack"
+      ]
+    },
+    {
+      "title": "Movie Player",
+      "desktop": "vlc",
+      "icon": "movie2.png",
+      "iconBox": "movie.png"
+    },
+    {
+      "title": "Accessories",
+      "options": true,
+      "icon": "accessories2.png",
+      "iconBox": "accessories.png"
+    },
+    {
+      "title": "Data Manager",
+      "desktop": "dolphin",
+      "icon": "data2.png",
+      "iconBox": "data.png"
+    },
+    {
+      "title": "The World",
+      "desktop": "firefox",
+      "icon": "theworld2.png",
+      "iconBox": "theworld.png"
+    },
+    {
+      "title": "Mail Station",
+      "desktop": "thunderbird",
+      "icon": "mail2.png",
+      "iconBox": "mail.png",
+      "command": [
+        "xdg-open",
+        "https://mail.google.com"
+      ]
+    },
+    {
+      "title": "Crimson VS",
+      "desktop": "steam",
+      "icon": "crimsomvs2.png",
+      "iconBox": "crimsomvs.png"
+    }
+  ]
+}

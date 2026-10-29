@@ -63,7 +63,7 @@ Item {
     }
     readonly property string panelTitle: "Wi-Fi"
     property var passwordRequest: null
-    readonly property string placeholderIcon: "accessories2.png"
+    readonly property string placeholderIcon: "theworld2.png"
     property bool startedScan: false
     readonly property string title: "Wi-Fi"
 

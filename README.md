@@ -37,12 +37,20 @@ qs -c altimit ipc call altimit options   # open the HUD with the options panel r
 qs -c altimit ipc call altimit wifi      # open the options panel directly on Wi-Fi
 qs -c altimit ipc call altimit bluetooth # open the options panel directly on Bluetooth
 qs -c altimit ipc call altimit background # open the options panel directly on BG Setting
+qs -c altimit ipc call altimit mail      # open the HUD on the Mail Station
+```
+
+Notifications are shown at the top-right corner of the screen. Hovering a popup pauses its timer, the × button hides it, and clicking it runs the sender's default action (or opens the mail in the Mail Station when there is none). Hidden popups stay in the Mail Station inbox until deleted. To test:
+
+```bash
+notify-send "Mail Station" "There are important unread mails in Mail Station." -i mail-unread
 ```
 
 Hyprland example:
 
 ```ini
 exec-once = qs -c altimit -d
+exec-once = wl-paste --watch cliphist store   # clipboard history for the Mail Station Outbox
 bind = SUPER, SPACE, exec, qs -c altimit ipc call altimit toggle
 ```
 
@@ -81,8 +89,40 @@ bind = SUPER, SPACE, exec, qs -c altimit ipc call altimit toggle
 | `font` | string | `"Archivo"` | Font family for the info box |
 | `fontWidth` | number | `125` | `wdth` axis for variable fonts, in percent. `125` gives Archivo Expanded. Ignored by static fonts |
 | `hintFont` | string | `"M PLUS 1p"` | Font family for the hint bar |
+| `notifications` | bool | `true` | Run the built-in notification daemon (top-right popups). Disable it when using mako, dunst, swaync or another daemon, since only one can own `org.freedesktop.Notifications` |
+| `notificationHistory` | bool | `true` | Keep notifications in the Mail Station after their popup closes (also across Quickshell reloads). When `false`, closing a popup discards the notification |
+| `clipboardHistory` | bool | `true` | Show the [cliphist](https://github.com/sentriz/cliphist) history in the Mail Station Outbox. Needs `cliphist` and `wl-clipboard`, with `wl-paste --watch cliphist store` running |
+| `notificationScreen` | string | `""` | Monitor that shows the notification popups, by output name (`hyprctl monitors` lists them, e.g. `DP-1`, `HDMI-A-1`). Empty or unknown names leave the choice to the compositor (on Hyprland, the focused monitor) |
+| `notificationTimeout` | number | `6` | Seconds a popup stays on screen when the sender does not set a timeout. Critical notifications stay until closed |
 | `options` | string[] | `["wifi", "bluetooth", "background"]` | Categories shown in the options panel, in this order. Valid values: `wifi`, `bluetooth`, `background`. Remove an entry to hide it |
 | `apps` | array | `[]` | Carousel entries, in order |
+
+### App entries
+
+| Key | Type | Description |
+|---|---|---|
+| `title` | string | Name shown in the info box. Defaults to the desktop entry name |
+| `description` | string | Info box text. Defaults to the desktop entry comment |
+| `icon` | string | Carousel icon (relative to `assets/`, absolute, or a URL) |
+| `iconBox` | string | Info box icon. Defaults to `icon` |
+| `desktop` | string | Desktop entry to launch |
+| `command` | string[] | Command to run instead of the desktop entry |
+| `options` | bool | Open the options panel instead of launching anything |
+| `mail` | bool | Open the Mail Station (notification inbox) instead of launching anything. Shows a `NEW` badge on the icon while there are unread notifications |
+
+### Mail Station
+
+The Mail Station opens on the folder screen (Inbox, Outbox, Address). The Inbox lists every notification kept by the built-in daemon, newest first. The Outbox ("Send greeting card.") lists the clipboard history from cliphist: the Type column shows `Text` or `Image` and the Preview pane shows the full text or the image of the selected entry. `Enter` or a double click copies it back to the clipboard without leaving the list. Address is decorative and always empty. While the Mail Station is open its own footer replaces the HUD hint bar. Sender is the app name, Subject is the notification title and `NEW` marks unread ones. Opening a mail shows the notification image (or the sender's icon when there is none), the body and the notification's actions.
+
+| Input | Action |
+|---|---|
+| `←` `→` / mouse wheel | Choose a folder (folder screen) |
+| `Enter` / double click | Open the folder, read the selected mail (Outbox: copy the selected entry), or run the default action (open mail) |
+| `↑` `↓` / `PgUp` `PgDn` / mouse wheel | Move the selection (inbox) or scroll the mail |
+| `1`–`9` / click | Run the matching action of the open mail |
+| `Del` | Delete the selected or open mail (Outbox: remove the entry from cliphist) |
+| `Shift` + `Del` | Delete every mail (Inbox only) |
+| `Esc` | Back one level: mail → inbox → folders → carousel |
 
 A top-level array (legacy format) is still accepted and is treated as `apps` with all other options at their defaults.
 

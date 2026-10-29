@@ -55,7 +55,7 @@ Item {
     readonly property string listTitle: "devices"
     readonly property string panelTitle: "Bluetooth"
     property var pendingConnect: ({})
-    readonly property string placeholderIcon: "accessories2.png"
+    readonly property string placeholderIcon: "crimsomvs2.png"
     property bool scanWhenPowered: false
     property bool startedScan: false
     readonly property string title: "Bluetooth"

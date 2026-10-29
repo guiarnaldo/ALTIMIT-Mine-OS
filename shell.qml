@@ -25,6 +25,7 @@ ShellRoot {
     }
     property bool mounted: false
     property bool open: false
+    property var pendingMail: null
     property var pendingOptions: null
 
     function expandHome(path) {
@@ -39,6 +40,7 @@ ShellRoot {
 
         return {
             title: app.title || (entry ? entry.name : ""),
+            mail: app.mail === true,
             options: app.options === true,
             description: app.description || (entry ? entry.comment : ""),
             icon: app.icon || "",
@@ -50,6 +52,12 @@ ShellRoot {
     function show() {
         mounted = true;
         open = true;
+    }
+    function showMail(id) {
+        pendingMail = {
+            id: id
+        };
+        show();
     }
     function showOptions(level, key) {
         pendingOptions = {
@@ -81,6 +89,28 @@ ShellRoot {
             service: wallpaperService
         }
     }
+    LazyLoader {
+        id: notifications
+
+        active: shell.config.notifications ?? true
+
+        Notifications {
+            fontFamily: shell.config.hintFont ?? "M PLUS 1p"
+            history: shell.config.notificationHistory ?? true
+            screenName: shell.config.notificationScreen ?? ""
+            timeout: shell.config.notificationTimeout ?? 6
+
+            onOpenRequested: id => shell.showMail(id)
+        }
+    }
+    LazyLoader {
+        id: clipboard
+
+        active: shell.config.clipboardHistory ?? true
+
+        ClipboardService {
+        }
+    }
     IpcHandler {
         function background(): void {
             shell.showOptions(1, "background");
@@ -90,6 +120,9 @@ ShellRoot {
         }
         function hide(): void {
             shell.open = false;
+        }
+        function mail(): void {
+            shell.showMail(-1);
         }
         function options(): void {
             shell.showOptions(0, "");
@@ -132,6 +165,11 @@ ShellRoot {
                 id: hud
 
                 function takeOptions() {
+                    const mailReq = shell.pendingMail;
+                    if (mailReq) {
+                        shell.pendingMail = null;
+                        openMail(mailReq.id);
+                    }
                     const req = shell.pendingOptions;
                     if (!req)
                         return;
@@ -142,10 +180,12 @@ ShellRoot {
                 active: shell.open
                 anchors.fill: parent
                 apps: shell.apps
+                clipboardService: clipboard.item
                 focus: shell.open
                 fontFamily: shell.config.font ?? "Archivo"
                 fontWidth: shell.config.fontWidth ?? 125
                 hintFontFamily: shell.config.hintFont ?? "M PLUS 1p"
+                mailService: notifications.item
                 optionCategories: shell.config.options ?? ["wifi", "bluetooth", "background"]
                 screenName: win.screen ? win.screen.name : ""
                 showHintBar: shell.config.hintBar ?? true
@@ -166,6 +206,9 @@ ShellRoot {
                 }
 
                 Connections {
+                    function onPendingMailChanged() {
+                        hud.takeOptions();
+                    }
                     function onPendingOptionsChanged() {
                         hud.takeOptions();
                     }

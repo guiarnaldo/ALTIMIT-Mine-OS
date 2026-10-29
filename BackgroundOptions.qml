@@ -35,7 +35,7 @@ Item {
     readonly property string listTitle: "Background"
     readonly property string output: tabs[tabIndex] || ""
     readonly property string panelTitle: "BG Setting"
-    readonly property string placeholderIcon: "accessories2.png"
+    readonly property string placeholderIcon: "movie2.png"
     readonly property var svc: hud ? hud.wallpapers : null
     property int tabIndex: 0
     readonly property var tabs: svc ? svc.outputs : []

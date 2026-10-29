@@ -5,6 +5,11 @@
   "font": "Archivo",
   "fontWidth": 125,
   "hintFont": "M PLUS 1p",
+  "notifications": true,
+  "notificationTimeout": 6,
+  "notificationScreen": "",
+  "notificationHistory": true,
+  "clipboardHistory": true,
   "options": [
     "background",
     "wifi",
@@ -55,13 +60,9 @@
     },
     {
       "title": "Mail Station",
-      "desktop": "thunderbird",
+      "mail": true,
       "icon": "mail2.png",
-      "iconBox": "mail.png",
-      "command": [
-        "xdg-open",
-        "https://mail.google.com"
-      ]
+      "iconBox": "mail.png"
     },
     {
       "title": "Crimson VS",

@@ -8,6 +8,7 @@ Item {
     property var apps: []
     readonly property bool busy: settle.running || revealAnim.running || explodeAnim.running
     property real cameraPitch: -26
+    property var clipboardService: null
     property real clock: 0
     readonly property int count: Math.max(apps.length, 1)
     readonly property int current: ((step % count) + count) % count
@@ -43,8 +44,11 @@ Item {
             gray: ["#8a8c8e", "#4a4a4a"]
         })
     readonly property real liveRadius: ringRadius * (1 + explode * 2.4)
+    readonly property bool mailOpen: mail.open || mail.visible
+    property var mailService: null
     property var optionCategories: ["wifi", "bluetooth", "background"]
     readonly property bool optionsOpen: options.open
+    readonly property bool panelOpen: optionsOpen || mailOpen
     property real reveal: 0
     property real ringRadius: 600
     property string screenName: ""
@@ -66,6 +70,7 @@ Item {
     readonly property real slotAngle: 360 / (count * 2)
     property int step: 0
     readonly property real uiReveal: Math.max(0, Math.min(1, (reveal - 0.65) / 0.35))
+    readonly property int unreadMail: mailService ? mailService.unreadCount : 0
     property string wallpaper: ""
     property var wallpapers: null
 
@@ -113,10 +118,17 @@ Item {
             return;
         if (apps[current].options)
             options.show(0);
+        else if (apps[current].mail)
+            mail.show(-1);
         else
             explodeAnim.start();
     }
+    function openMail(id) {
+        options.hide();
+        mail.show(id);
+    }
     function openOptions(startLevel, key) {
+        mail.hide();
         options.show(startLevel, key);
     }
     function orderOf(index) {
@@ -146,6 +158,10 @@ Item {
         event.accepted = true;
         if (optionsOpen) {
             options.handleKey(event);
+            return;
+        }
+        if (mailOpen) {
+            mail.handleKey(event);
             return;
         }
         switch (event.key) {
@@ -178,8 +194,10 @@ Item {
         }
         if (active)
             explode = 0;
-        else
+        else {
             options.hide();
+            mail.hide();
+        }
         animateReveal(active);
     }
 
@@ -250,6 +268,8 @@ Item {
             if (Math.abs(acc) >= 120) {
                 if (root.optionsOpen)
                     options.move(acc > 0 ? -1 : 1);
+                else if (root.mailOpen)
+                    mail.move(acc > 0 ? -1 : 1);
                 else
                     root.rotate(acc > 0 ? -1 : 1);
                 acc = 0;
@@ -261,7 +281,7 @@ Item {
 
         anchors.fill: parent
         camera: camera
-        opacity: root.optionsOpen ? 0 : 1
+        opacity: root.panelOpen ? 0 : 1
         renderMode: View3D.Offscreen
 
         environment: SceneEnvironment {
@@ -372,6 +392,15 @@ Item {
                                             }
                                         }
                                     }
+
+                                    NewBadge {
+                                        fontFamily: root.hintFontName
+                                        italic: true
+                                        size: icon.height * 0.2
+                                        visible: !!icon.app.mail && root.unreadMail > 0
+                                        x: -parent.width * 0.45
+                                        y: -parent.height * 0.3
+                                    }
                                 }
                             }
                         }
@@ -438,7 +467,7 @@ Item {
         fontName: root.fontName
         height: root.height * 0.251
         icon: root.asset(root.shownApp.iconBox || root.shownApp.icon)
-        opacity: root.busy || root.optionsOpen ? 0 : root.uiReveal
+        opacity: root.busy || root.panelOpen ? 0 : root.uiReveal
         title: root.shownApp.title
         width: root.width * 0.447
         x: root.width * 0.396
@@ -455,12 +484,20 @@ Item {
     Item {
         id: selector
 
+        property real away: root.mailOpen ? 1 : 0
+
         height: width
-        opacity: Math.min(1, root.reveal * 4) * (1 - Math.max(0, (root.explode - 0.6) / 0.4))
+        opacity: Math.min(1, root.reveal * 4) * (1 - Math.max(0, (root.explode - 0.6) / 0.4)) * (1 - away)
         scale: 0.6 + 0.4 * Math.min(1, root.reveal * 2.5)
         width: root.height * 0.275
         x: root.selectorPoint.x - width / 2
         y: root.selectorPoint.y - height / 2
+
+        Behavior on away {
+            NumberAnimation {
+                duration: 300
+            }
+        }
 
         Image {
             height: width
@@ -546,6 +583,14 @@ Item {
             onClicked: root.optionsOpen ? options.hide() : root.launch()
         }
     }
+    MailStation {
+        id: mail
+
+        anchors.fill: parent
+        clipboard: root.clipboardService
+        hud: root
+        service: root.mailService
+    }
     Rectangle {
         id: hintBar
 
@@ -554,7 +599,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         color: "#c3c4c6"
         height: root.height * 0.07
-        visible: root.showHintBar
+        visible: root.showHintBar && !root.mailOpen
         width: parent.width * 0.98
         y: root.height * 0.894 + (1 - root.uiReveal * (1 - root.explode)) * root.height * 0.15
 
